@@ -6,8 +6,8 @@ A CHIP‑8 emulator written in Go, using SDL3 for graphics, input, and audio. I 
 
 ## Screenshots
 
-![brix](screenshots\brix.png)
-![ufo](screenshots\ufo.png)
+![brix](screenshots/brix.png)
+![ufo](screenshots/ufo.png)
 
 ## Quick Start
 

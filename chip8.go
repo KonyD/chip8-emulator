@@ -51,7 +51,6 @@ type CHIP8 struct {
 	keyboard     Keyboard
 	speaker      Speaker
 	beeping      bool
-	draw         bool
 }
 
 func (chip8 *CHIP8) Reset() {
@@ -180,14 +179,13 @@ func (chip8 *CHIP8) ExecuteInstruction(config Config) {
 
 	switch (chip8.inst.opcode >> 12) & 0x0F {
 	case 0x00:
-		switch chip8.inst.NN {
-		case 0xE0:
+		switch chip8.inst.NNN {
+		case 0x0E0:
 			// 0x00E0: Clear the screen
 			for i := range chip8.display {
 				chip8.display[i] = false
 			}
-			chip8.draw = true
-		case 0xEE:
+		case 0x0EE:
 			// 0x00EE: Return from subroutine
 			chip8.stackPointer--
 			chip8.PC = chip8.stack[chip8.stackPointer]
@@ -316,6 +314,10 @@ func (chip8 *CHIP8) ExecuteInstruction(config Config) {
 		}
 	case 0x09:
 		// 0x9XY0: Check if VX != VY; Skip next instruction if so
+		if chip8.inst.N != 0 {
+			break
+		}
+
 		if chip8.V[chip8.inst.X] != chip8.V[chip8.inst.Y] {
 			chip8.PC += 2
 		}
@@ -364,8 +366,6 @@ func (chip8 *CHIP8) ExecuteInstruction(config Config) {
 				break
 			}
 		}
-
-		chip8.draw = true
 	case 0x0E:
 		switch chip8.inst.NN {
 		case 0x9E:
@@ -524,13 +524,11 @@ func main() {
 			sdl.DelayNS((16 - timeElapsed) * 1_000_000) // convert ms -> ns
 		}
 
-		if chip8.draw {
-			chip8.renderer.Render()
+		chip8.renderer.Render()
 
-			sdl.RenderPresent(sdl_t.renderer)
+		sdl.RenderPresent(sdl_t.renderer)
 
-			chip8.UpdateTimers()
-		}
+		chip8.UpdateTimers()
 	}
 
 	FinalCleanup(sdl_t, chip8.speaker)
